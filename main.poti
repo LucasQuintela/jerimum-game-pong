@@ -1,0 +1,233 @@
+use "jerimum"
+
+bola_img = Imagem("imagens/bola.png")
+j1_img = Imagem("imagens/j1.png")
+j2_img = Imagem("imagens/j2.png")
+quadra_img = Imagem("imagens/quadra.png")
+iniciar_img = Imagem("imagens/logo2.png")
+
+var pontos_j1 = 0
+var pontos_j2 = 0
+
+var bandeira = falso
+
+fonte = Fonte(16)
+
+
+tipo Bola
+  var x, y, velocidade_x, velocidade_y: Inteiro
+  var sprite = Imagem("")
+
+
+  desenhe()
+    sprite.desenhe_centralizado(x, y, 3)
+  fim
+
+  coloque_sprite(img : Imagem)
+    sprite := img
+  fim
+
+  atualize(j1,j2:Jogador)
+
+     x := x + velocidade_x
+     y := y + velocidade_y
+
+
+    se y<= 85  então
+      velocidade_y := abs(velocidade_y)
+    senãose y>= 440 então
+      velocidade_y := - abs(velocidade_y)
+    fim
+
+   # x, y, altura, velocidade
+
+   #jogador 1
+
+    se x <= j1.x e y < ( j1.y+(j1.altura div 2))  e y > ( j1.y-(j1.altura div 2)) então
+    velocidade_x := abs(velocidade_x)
+
+    se j1.deslocamento == 1 então
+      velocidade_y := velocidade_y + aleatório(5,10)
+    fim
+
+     se j1.deslocamento == 1 então
+          velocidade_y := velocidade_y + aleatório(-10,-5)
+     fim
+
+    fim
+
+     se x <= j1.x-10 e bandeira == falso então
+      escreva "ponto j2"
+      pontos_j2 := pontos_j2 + 1
+      bandeira := verdadeiro
+     fim
+
+
+   #jogador 2
+
+   se x >= j2.x e y < ( j2.y+(j2.altura div 2))  e y > ( j2.y-(j2.altura div 2)) então
+   velocidade_x := - abs(velocidade_x)
+
+   se j2.deslocamento == 1 então
+     velocidade_y := velocidade_y + aleatório(5,10)
+   fim
+
+    se j2.deslocamento == 1 então
+         velocidade_y := velocidade_y + aleatório(-10,-5)
+    fim
+
+   fim
+
+   se x >= j2.x+10 e   bandeira == falso então
+     escreva "ponto j1"
+     pontos_j1 := pontos_j1 + 1
+     bandeira := verdadeiro
+   fim
+
+  fim
+
+fim
+
+tipo Jogador
+  var id, x, y, largura, altura, velocidade: Inteiro
+  var sprite = Imagem("")
+  var deslocamento = 0
+
+  atualize()
+    movimento(id)
+  fim
+
+  desenhe()
+    sprite.desenhe_centralizado(x, y, 2)
+  fim
+
+  coloque_sprite(img : Imagem)
+  sprite := img
+  fim
+
+  bola_colide()
+
+  fim
+
+  movimento(controle:Inteiro)
+
+    deslocamento := 0
+
+    escolha controle
+      caso 1 =>
+
+      se Teclado.TECLA_W e y>129 então
+        #escreva "W"
+        y := y-velocidade
+        deslocamento := -1
+      fim
+
+      se Teclado.TECLA_S e  y<405 então
+        #escreva "S"
+        y := y+velocidade
+       deslocamento := 1
+      fim
+
+      caso 2 =>
+
+      se Teclado.TECLA_PARA_CIMA e y>129 então
+        #escreva "8"
+        y := y-velocidade
+        deslocamento := -1
+      fim
+
+      se Teclado.TECLA_PARA_BAIXO e y<405 então
+        #escreva "2"
+        y := y+velocidade
+        deslocamento := 1
+      fim
+
+  fim
+
+
+
+  fim
+
+
+fim
+
+
+var em_jogo = falso
+
+#id, x, y, largura, altura, velocidade: Inteiro
+j1 = Jogador(1,20,240,1,120,5)
+j1.coloque_sprite(j1_img)
+
+j2 = Jogador(2,620,240,1,120,5)
+j2.coloque_sprite(j2_img)
+
+bola = Bola(320,268,-5,0)
+bola.coloque_sprite(bola_img)
+
+
+atualize()
+  # Código para atualizar o jogo
+
+ se em_jogo == verdadeiro então
+ #escreva "em jogo"
+
+
+    se Teclado.TECLA_R então
+      bola.x := 320
+      bola.y := 268
+      bola.velocidade_x := aleatorio(-5,5)
+      bola.velocidade_y := aleatorio(-5,5)
+
+      bandeira := falso
+    fim
+
+ j1.atualize()
+ j2.atualize()
+
+    se bandeira == falso entao
+      bola.atualize(j1,j2)
+    fim
+
+ fim
+
+ se em_jogo == falso então
+
+
+
+   se Teclado.TECLA_ESPAÇO então
+     escreva "Jogo Iniciou"
+     em_jogo := verdadeiro
+   fim
+
+
+ fim
+
+fim
+
+desenhe()
+  # código para desenhar o jogo
+
+  #Fonte para Pontos e Jogador
+  fonte.desenhe("Jogador 1", 30, 25, 5,  Cor.AMARELO)
+  fonte.desenhe("{pontos_j1}", 30, 50, 5,  Cor.AMARELO)
+  fonte.desenhe("Jogador 2", 550, 25, 5,  Cor.AMARELO)
+  fonte.desenhe("{pontos_j2}", 570, 50, 5,  Cor.AMARELO)
+
+
+  se em_jogo == verdadeiro então
+    j1.desenhe()
+    j2.desenhe()
+    quadra_img.desenhe(0, 0, 1)
+
+    se bandeira == falso entao
+      bola.desenhe()
+      iniciar_img.desenhe(0, 0, 1)
+    fim
+
+  fim
+
+  se bandeira == falso  então
+    iniciar_img.desenhe(0, 0, 1)
+  fim
+fim
+jogo.iniciar("PONG", 640, 480, atualize, desenhe, 60)
